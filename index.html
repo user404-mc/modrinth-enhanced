@@ -530,6 +530,14 @@
         <div class="loader" id="initialLoader"><div class="spinner"></div><p>Loading tags…</p></div>
     </div>
 
+<script>
+  (function() {
+    if (!window.location.pathname.startsWith('/mobile/') && window.innerWidth <= 768) {
+      window.location.href = 'mobile/';
+    }
+  })();
+</script>
+
     <script>
         (function() {
             const API_BASE = 'https://api.modrinth.com/v2';
