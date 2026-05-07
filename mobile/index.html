@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Modrinth Enhanced — Mobile Optimized</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        /* ----- GLOBAL RESET & VARIABLES ----- */
+        :root {
+            --bg: #0f0f0f;
+            --card: #1c1c1c;
+            --card-hover: #272727;
+            --text: #e5e5e5;
+            --text-secondary: #a0a0a0;
+            --accent: #2B88C2;
+            --accent-dark: #1f6a9a;
+            --accent-soft: #2B88C2;
+            --danger: #ef4444;
+            --border: #2e2e2e;
+            --radius: 12px;
+            --gap: 1rem;
+            --max-width: 1280px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, sans-serif;
+            line-height: 1.5;
+            min-height: 100vh;
+        }
+
+        a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+            transition: opacity 0.2s;
+        }
+
+        a:active {
+            opacity: 0.7;
+        }
+
+        #app {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 1rem 1rem;
+        }
+
+        /* ----- TOPBAR (sticky, touch-friendly) ----- */
+        .topbar {
+            background: linear-gradient(135deg, #0c2b3b, #071e2a);
+            border-bottom: 2px solid var(--accent);
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            position: sticky;
+            top: 0;
+            z-index: 30;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: white;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .logo-icon {
+            background: var(--accent);
+            color: white;
+            padding: 0.2rem 0.55rem;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 900;
+        }
+
+        .topbar input[type="search"] {
+            flex: 1;
+            min-width: 160px;
+            padding: 0.6rem 1rem;
+            border-radius: 44px;
+            border: 1px solid var(--border);
+            background: #0f172a;
+            color: white;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .topbar input[type="search"]:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: #111827;
+        }
+
+        .topbar button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 44px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: background 0.2s, transform 0.05s;
+            touch-action: manipulation;
+        }
+
+        .topbar button:active {
+            transform: scale(0.97);
+            background: var(--accent-dark);
+        }
+
+        .home-link {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.45rem 1.1rem;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 500;
+            display: inline-block;
+            transition: 0.2s;
+        }
+
+        .home-link:active {
+            background: var(--card-hover);
+        }
+
+        /* ----- SEARCH LAYOUT (mobile-first adjustments) ----- */
+        .search-page {
+            display: flex;
+            gap: var(--gap);
+            margin-top: 1.2rem;
+        }
+
+        /* Sidebar — collapsible on mobile */
+        .sidebar {
+            width: 100%;
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+            border: 1px solid var(--border);
+            transition: all 0.2s ease;
+        }
+
+        .sidebar h3 {
+            margin-bottom: 0.75rem;
+            color: var(--accent);
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .sidebar label {
+            font-weight: 600;
+            margin: 0.7rem 0 0.3rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .sidebar select {
+            width: 100%;
+            padding: 0.6rem;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: #0f172a;
+            color: #e5e5e5;
+            font-size: 0.9rem;
+            margin-bottom: 0.2rem;
+            font-family: inherit;
+        }
+
+        .sidebar select[multiple] {
+            min-height: 100px;
+        }
+
+        .apply-btn {
+            width: 100%;
+            margin-top: 1.2rem;
+            padding: 0.75rem;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 44px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: 0.2s;
+        }
+
+        .apply-btn:active {
+            background: var(--accent-dark);
+        }
+
+        /* results area */
+        .results-area {
+            flex: 1;
+        }
+
+        .filter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-toggle-btn {
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.5rem 1.2rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            touch-action: manipulation;
+        }
+
+        .filter-toggle-btn:active {
+            background: var(--card-hover);
+        }
+
+        .results-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.9rem;
+        }
+
+        .result-card {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 1rem;
+            display: flex;
+            gap: 0.9rem;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.1s;
+            border: 1px solid var(--border);
+            touch-action: manipulation;
+        }
+
+        .result-card:active {
+            background: var(--card-hover);
+            transform: scale(0.99);
+        }
+
+        .result-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            object-fit: cover;
+            background: #262626;
+            flex-shrink: 0;
+        }
+
+        .result-info h4 {
+            font-size: 1rem;
+            margin-bottom: 0.2rem;
+            line-height: 1.3;
+        }
+
+        .result-info p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.3rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .result-meta {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            align-items: center;
+        }
+
+        /* pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 0.8rem;
+            margin: 1.8rem 0;
+            flex-wrap: wrap;
+        }
+
+        .pagination button {
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.5rem 1.2rem;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+
+        /* project detail */
+        .project-detail .home-link {
+            margin-bottom: 1rem;
+        }
+
+        .project-header {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.4rem;
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+            border: 1px solid var(--border);
+        }
+
+        .project-icon-large {
+            width: 90px;
+            height: 90px;
+            border-radius: 18px;
+            object-fit: cover;
+            background: #1e1e1e;
+        }
+
+        .project-title-area h1 {
+            font-size: 1.7rem;
+            word-break: break-word;
+        }
+
+        .project-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            font-size: 0.8rem;
+            margin: 0.6rem 0;
+        }
+
+        .detail-tabs {
+            display: flex;
+            gap: 0.25rem;
+            overflow-x: auto;
+            scrollbar-width: thin;
+            margin-bottom: 0.8rem;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 0.6rem 1rem;
+            cursor: pointer;
+            font-weight: 600;
+            white-space: nowrap;
+            border-bottom: 2px solid transparent;
+            font-size: 0.9rem;
+        }
+
+        .tab-btn.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .tab-content {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+        }
+
+        /* version table responsive */
+        .version-list {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            min-width: 500px;
+        }
+
+        .version-list th, .version-list td {
+            text-align: left;
+            padding: 0.7rem 0.4rem;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+
+        .download-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.3rem 0.7rem;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            display: inline-block;
+            margin: 2px 2px;
+        }
+
+        /* team and user sections */
+        .team-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            margin: 0.8rem 0;
+        }
+
+        .team-member {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: rgba(255,255,255,0.05);
+            border-radius: 40px;
+            padding: 0.2rem 0.8rem 0.2rem 0.4rem;
+        }
+
+        .team-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .user-profile .user-header {
+            flex-direction: column;
+            text-align: center;
+            background: var(--card);
+            padding: 1.2rem;
+            border-radius: var(--radius);
+        }
+
+        .user-avatar {
+            width: 85px;
+            height: 85px;
+            border-radius: 50%;
+            margin-bottom: 0.5rem;
+        }
+
+        /* loader */
+        .loader {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            border: 3px solid var(--border);
+            border-top: 3px solid var(--accent);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 0.8s linear infinite;
+            margin: 0.8rem auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* desktop overrides */
+        @media (min-width: 769px) {
+            .sidebar {
+                width: 280px;
+                position: sticky;
+                top: 90px;
+                display: block !important;
+            }
+            .filter-toggle-btn {
+                display: none;
+            }
+            .result-icon {
+                width: 64px;
+                height: 64px;
+            }
+            .project-icon-large {
+                width: 128px;
+                height: 128px;
+            }
+        }
+
+        /* mobile specific (max-width 768px) */
+        @media (max-width: 768px) {
+            #app {
+                padding: 0.8rem 0.9rem;
+            }
+            .search-page {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                margin-bottom: 0.8rem;
+                display: none; /* hidden by default, toggled via JS */
+            }
+            .sidebar.visible {
+                display: block;
+            }
+            .filter-toggle-btn {
+                display: inline-flex;
+                background: #1c1c2a;
+                border: 1px solid var(--accent);
+            }
+            .result-card {
+                padding: 0.8rem;
+            }
+            .result-info h4 {
+                font-size: 0.95rem;
+            }
+            .topbar {
+                padding: 0.6rem 0.8rem;
+            }
+            .topbar input[type="search"] {
+                font-size: 16px; /* prevents zoom on iOS */
+            }
+            .tab-content {
+                padding: 0.9rem;
+            }
+            .project-title-area h1 {
+                font-size: 1.5rem;
+            }
+            .version-list {
+                font-size: 0.7rem;
+                min-width: 480px;
+            }
+            .team-member {
+                font-size: 0.75rem;
+            }
+            .apply-btn {
+                padding: 0.7rem;
+            }
+        }
+
+        .error {
+            color: #f87171;
+            padding: 1rem;
+            text-align: center;
+        }
+        .footer-note {
+            text-align: center;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-top: 2rem;
+            padding: 1rem;
+            border-top: 1px solid var(--border);
+        }
+        .overflow-auto {
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+<div class="topbar">
+    <div class="logo" id="homeBtn">
+        <span class="logo-icon">M+</span>
+        <span>Modrinth <strong>Enhanced</strong></span>
+    </div>
+    <input type="search" id="searchInput" placeholder="Search projects..." aria-label="Search">
+    <button id="searchBtn">Search</button>
+</div>
+<div id="app">
+    <div class="loader" id="initialLoader"><div class="spinner"></div><p>Loading tags…</p></div>
+</div>
+<div class="footer-note">
+    Modrinth Enhanced – a fan-made mobile friendly explorer. Data from <a href="https://modrinth.com" target="_blank">Modrinth</a> by <a href="https://modrinth.com/user/user404_">User404_</a>.
+</div>
+
+<script>
+    (function() {
+        const API_BASE = 'https://api.modrinth.com/v2';
+        const PAGE_LIMIT = 20;
+        let state = {
+            page: 'search',
+            searchQuery: '',
+            activeFacets: [],
+            offset: 0,
+            results: [],
+            totalResults: 0,
+            projectSlug: null,
+            projectData: null,
+            tags: { game_versions: [], loaders: [], categories: [] },
+            userId: null,
+            userData: null,
+            userProjects: []
+        };
+
+        const appEl = document.getElementById('app');
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const homeBtn = document.getElementById('homeBtn');
+        const initialLoader = document.getElementById('initialLoader');
+
+        async function apiFetch(path) {
+            const res = await fetch(`${API_BASE}${path}`);
+            if (!res.ok) throw new Error(`API error ${res.status}`);
+            return res.json();
+        }
+
+        async function loadTags() {
+            const [gameVersions, loaders, categories] = await Promise.all([
+                apiFetch('/tag/game_version'),
+                apiFetch('/tag/loader'),
+                apiFetch('/tag/category')
+            ]);
+            state.tags = { game_versions: gameVersions, loaders, categories };
+        }
+
+        function buildFacetsFromUI() {
+            const facets = [];
+            const typeSelect = document.getElementById('filter-type');
+            if (typeSelect && typeSelect.selectedOptions.length) facets.push(Array.from(typeSelect.selectedOptions).map(o => `project_type:${o.value}`));
+            const catSelect = document.getElementById('filter-categories');
+            if (catSelect && catSelect.selectedOptions.length) facets.push(Array.from(catSelect.selectedOptions).map(o => `categories:${o.value}`));
+            const verSelect = document.getElementById('filter-versions');
+            if (verSelect && verSelect.selectedOptions.length) facets.push(Array.from(verSelect.selectedOptions).map(o => `versions:${o.value}`));
+            const clientSelect = document.getElementById('filter-client');
+            if (clientSelect && clientSelect.selectedOptions.length) facets.push(Array.from(clientSelect.selectedOptions).map(o => `client_side:${o.value}`));
+            const serverSelect = document.getElementById('filter-server');
+            if (serverSelect && serverSelect.selectedOptions.length) facets.push(Array.from(serverSelect.selectedOptions).map(o => `server_side:${o.value}`));
+            return facets;
+        }
+
+        async function performSearch(query, facets, offset = 0) {
+            const params = new URLSearchParams();
+            params.append('query', query);
+            params.append('limit', PAGE_LIMIT);
+            params.append('offset', offset);
+            if (facets && facets.length) params.append('facets', JSON.stringify(facets));
+            return await apiFetch(`/search?${params.toString()}`);
+        }
+
+        function escapeHtml(str) { if (!str) return ''; return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;"); }
+
+        function renderSearchPage() {
+            let html = `<div class="search-page">
+                <aside class="sidebar" id="filterSidebar">
+                    <h3>🔍 Filters</h3>
+                    <label>Project Type</label>
+                    <select id="filter-type" multiple size="4">
+                        <option value="mod">Mod</option><option value="plugin">Plugin</option><option value="datapack">Datapack</option>
+                        <option value="resourcepack">Resource Pack</option><option value="shader">Shader</option><option value="modpack">Modpack</option>
+                    </select>
+                    <label>Categories / Loaders</label>
+                    <select id="filter-categories" multiple size="5">
+                        ${state.tags.loaders.map(l => `<option value="${l.name}">${l.name}</option>`).join('')}
+                        ${state.tags.categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('')}
+                    </select>
+                    <label>Game Versions</label>
+                    <select id="filter-versions" multiple size="5">${state.tags.game_versions.map(v => `<option value="${v.version}">${v.version}</option>`).join('')}</select>
+                    <label>Client Side</label>
+                    <select id="filter-client" multiple size="3"><option value="required">Required</option><option value="optional">Optional</option><option value="unsupported">Unsupported</option></select>
+                    <label>Server Side</label>
+                    <select id="filter-server" multiple size="3"><option value="required">Required</option><option value="optional">Optional</option><option value="unsupported">Unsupported</option></select>
+                    <button class="apply-btn" id="applyFilters">Apply Filters</button>
+                </aside>
+                <div class="results-area">
+                    <div class="filter-header">
+                        <h2>${state.searchQuery ? `Results: “${escapeHtml(state.searchQuery)}”` : 'Browse projects'}</h2>
+                        <button class="filter-toggle-btn" id="mobileFilterToggle">📂 Filters</button>
+                    </div>
+                    <div class="results-grid" id="resultsGrid">Loading...</div>
+                    <div class="pagination" id="pagination"></div>
+                </div>
+            </div>`;
+            appEl.innerHTML = html;
+
+            // mobile toggle logic
+            const sidebar = document.getElementById('filterSidebar');
+            const toggleBtn = document.getElementById('mobileFilterToggle');
+            function updateToggleVisibility() {
+                if (window.innerWidth <= 768) {
+                    if (sidebar && !sidebar.classList.contains('visible')) sidebar.classList.remove('visible');
+                    if (toggleBtn) {
+                        toggleBtn.innerText = sidebar?.classList.contains('visible') ? '✖ Hide Filters' : '📂 Show Filters';
+                    }
+                } else {
+                    if (sidebar) sidebar.classList.add('visible');
+                }
+            }
+            if (toggleBtn && sidebar) {
+                toggleBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    sidebar.classList.toggle('visible');
+                    toggleBtn.innerText = sidebar.classList.contains('visible') ? '✖ Hide Filters' : '📂 Show Filters';
+                });
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.remove('visible');
+                    toggleBtn.innerText = '📂 Show Filters';
+                } else {
+                    sidebar.classList.add('visible');
+                }
+                window.addEventListener('resize', () => {
+                    if (window.innerWidth > 768) {
+                        sidebar.classList.add('visible');
+                        if(toggleBtn) toggleBtn.style.display = 'none';
+                    } else {
+                        if(toggleBtn) toggleBtn.style.display = 'inline-flex';
+                        if (!sidebar.classList.contains('visible')) toggleBtn.innerText = '📂 Show Filters';
+                        else toggleBtn.innerText = '✖ Hide Filters';
+                    }
+                });
+            }
+            document.getElementById('applyFilters')?.addEventListener('click', async () => {
+                state.activeFacets = buildFacetsFromUI();
+                state.offset = 0;
+                await executeSearch();
+                if (window.innerWidth <= 768 && sidebar) sidebar.classList.remove('visible');
+                if(toggleBtn && window.innerWidth<=768) toggleBtn.innerText = '📂 Show Filters';
+            });
+            executeSearch();
+        }
+
+        async function executeSearch() {
+            const grid = document.getElementById('resultsGrid');
+            const pagDiv = document.getElementById('pagination');
+            if (!grid) return;
+            grid.innerHTML = '<div class="loader"><div class="spinner"></div><p>Searching...</p></div>';
+            try {
+                const data = await performSearch(state.searchQuery, state.activeFacets, state.offset);
+                state.totalResults = data.total_hits || 0;
+                state.results = data.hits || [];
+                renderResults(grid);
+                renderPagination(pagDiv, state.totalResults, state.offset, PAGE_LIMIT);
+            } catch (e) {
+                grid.innerHTML = `<p class="error">Failed to load: ${e.message}</p>`;
+            }
+        }
+
+        function renderResults(container) {
+            if (!state.results.length) { container.innerHTML = '<p>✨ No projects found. Try other filters.</p>'; return; }
+            container.innerHTML = state.results.map(proj => {
+                const icon = proj.icon_url || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" fill="%23333"/%3E%3C/svg%3E';
+                const authorName = proj.author || 'Unknown';
+                return `<div class="result-card" data-slug="${escapeHtml(proj.slug || proj.project_id)}">
+                    <img class="result-icon" src="${icon}" alt="icon" loading="lazy">
+                    <div class="result-info">
+                        <h4>${escapeHtml(proj.title)}</h4>
+                        <p>${escapeHtml(proj.description?.substring(0, 120)) || ''}</p>
+                        <div class="result-meta">
+                            <span>📥 ${(proj.downloads || 0).toLocaleString()}</span>
+                            <span>👥 ${(proj.follows || 0).toLocaleString()}</span>
+                            <span>📦 ${proj.project_type || 'mod'}</span>
+                            <a href="#user/${escapeHtml(authorName)}" class="author-link" data-username="${escapeHtml(authorName)}">👤 ${escapeHtml(authorName)}</a>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+            container.querySelectorAll('.result-card').forEach(card => {
+                card.addEventListener('click', (e) => { if (!e.target.closest('a')) navigateToProject(card.dataset.slug); });
+            });
+            container.querySelectorAll('.author-link').forEach(link => {
+                link.addEventListener('click', (e) => { e.stopPropagation(); navigateToUser(link.dataset.username); });
+            });
+        }
+
+        function renderPagination(container, total, offset, limit) {
+            if (!container) return;
+            const curPage = Math.floor(offset / limit) + 1;
+            const totalPages = Math.ceil(total / limit) || 1;
+            container.innerHTML = `<button ${offset===0?'disabled':''} id="prevPage">← Previous</button>
+                <span style="font-weight:500;">${curPage} / ${totalPages}</span>
+                <button ${offset+limit>=total?'disabled':''} id="nextPage">Next →</button>`;
+            document.getElementById('prevPage')?.addEventListener('click', () => { state.offset = Math.max(0, offset - limit); executeSearch(); });
+            document.getElementById('nextPage')?.addEventListener('click', () => { state.offset += limit; executeSearch(); });
+        }
+
+        async function loadProject(slug) {
+            const proj = await apiFetch(`/project/${slug}`);
+            const versions = await apiFetch(`/project/${proj.id}/version`);
+            proj._versions = versions;
+            state.projectData = proj;
+        }
+
+        function renderProjectDetail() {
+            const proj = state.projectData;
+            if (!proj) { appEl.innerHTML = '<div class="loader"><div class="spinner"></div></div>'; return; }
+            const icon = proj.icon_url || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" fill="%23333"/%3E%3C/svg%3E';
+            let teamHtml = '';
+            if (Array.isArray(proj.team) && proj.team.length) {
+                teamHtml = `<div class="team-section"><strong>👥 Team:</strong> ${proj.team.map(member => {
+                    const user = member.user || {};
+                    const avatar = user.avatar_url || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Ccircle cx="50" cy="50" r="45" fill="%23555"/%3E%3C/svg%3E';
+                    const username = user.username || user.id || 'member';
+                    return `<span class="team-member"><img class="team-avatar" src="${avatar}"><a href="#user/${escapeHtml(username)}" class="team-username">${escapeHtml(username)}</a><span class="team-role">${escapeHtml(member.role)}</span></span>`;
+                }).join('')}</div>`;
+            }
+            let html = `<div class="project-detail"><button class="home-link" id="backToSearch">← Back</button>
+                <div class="project-header"><img class="project-icon-large" src="${icon}"><div class="project-title-area"><h1>${escapeHtml(proj.title)}</h1><p>${escapeHtml(proj.description)}</p>
+                <div class="project-stats"><span>📥 ${(proj.downloads||0).toLocaleString()}</span><span>👥 ${(proj.followers||0).toLocaleString()}</span><span>📅 Updated: ${proj.updated ? new Date(proj.updated).toLocaleDateString() : 'N/A'}</span></div>
+                ${teamHtml}<div class="project-links">${proj.source_url ? `<a href="${proj.source_url}" target="_blank">Source</a>` : ''} ${proj.issues_url ? `<a href="${proj.issues_url}" target="_blank">Issues</a>` : ''}</div></div></div>
+                <div class="detail-tabs"><button class="tab-btn active" data-tab="overview">📄 Overview</button><button class="tab-btn" data-tab="versions">📦 Versions (${(proj._versions||[]).length})</button><button class="tab-btn" data-tab="dependencies">🔗 Dependencies</button></div>
+                <div class="tab-content" id="tabContent"></div></div>`;
+            appEl.innerHTML = html;
+            document.getElementById('backToSearch')?.addEventListener('click', () => navigateToSearch());
+            document.querySelectorAll('.team-username').forEach(l => l.addEventListener('click', (e) => { e.preventDefault(); navigateToUser(l.innerText); }));
+            setupProjectTabs(proj);
+            switchTab('overview', proj);
+        }
+
+        function setupProjectTabs(proj) {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    switchTab(btn.dataset.tab, proj);
+                });
+            });
+        }
+        function switchTab(tab, proj) {
+            const content = document.getElementById('tabContent');
+            if (!content) return;
+            if (tab === 'overview') content.innerHTML = marked.parse(proj.body || '*No description available*');
+            else if (tab === 'versions') renderVersions(content, proj._versions || []);
+            else if (tab === 'dependencies') renderDependencies(content, proj);
+        }
+        function renderVersions(container, versions) {
+            if (!versions.length) { container.innerHTML = '<p>No versions.</p>'; return; }
+            const sorted = [...versions].sort((a,b)=>new Date(b.date_published)-new Date(a.date_published));
+            let html = `<div class="overflow-auto"><table class="version-list"><thead><tr><th>Version</th><th>Game Versions</th><th>Loader</th><th>Published</th><th>Download</th></tr></thead><tbody>`;
+            sorted.forEach(v => {
+                const files = v.files || [];
+                const downloadLinks = files.map(f => `<a class="download-btn" href="${f.url}" download>${escapeHtml(f.filename)}</a>`).join(' ');
+                html += `<tr><td>${escapeHtml(v.version_number)}</td><td>${(v.game_versions||[]).slice(0,3).join(', ')}</td><td>${(v.loaders||[]).join(', ')}</td><td>${new Date(v.date_published).toLocaleDateString()}</td><td>${downloadLinks || '—'}</td></tr>`;
+            });
+            html += `</tbody></table></div>`;
+            container.innerHTML = html;
+        }
+        async function renderDependencies(container, proj) {
+            container.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
+            try {
+                const versions = proj._versions || [];
+                if (!versions.length) { container.innerHTML = '<p>No version info</p>'; return; }
+                const latest = versions.sort((a,b)=>new Date(b.date_published)-new Date(a.date_published))[0];
+                const verDetail = await apiFetch(`/version/${latest.id}`);
+                const deps = verDetail.dependencies || [];
+                if (!deps.length) { container.innerHTML = '<p>No dependencies listed</p>'; return; }
+                let table = `<div class="overflow-auto"><table class="version-list"><thead><tr><th>Project</th><th>Type</th><th>Requirement</th></tr></thead><tbody>`;
+                for (let dep of deps) {
+                    let projTitle = dep.project_id;
+                    try { const p = await apiFetch(`/project/${dep.project_id}`); projTitle = p.title; } catch(e) {}
+                    table += `<tr><td><a href="#project/${dep.project_id}">${escapeHtml(projTitle)}</a></td><td>${dep.dependency_type}</td><td>${dep.version_id || 'any'}</td></tr>`;
+                }
+                table += `</tbody></table></div>`;
+                container.innerHTML = table;
+                container.querySelectorAll('a[href^="#project/"]').forEach(a => a.addEventListener('click', (e) => { e.preventDefault(); navigateToProject(a.getAttribute('href').split('#project/')[1]); }));
+            } catch(e) { container.innerHTML = `<p>Error loading dependencies</p>`; }
+        }
+        async function loadUser(userId) {
+            const user = await apiFetch(`/user/${userId}`);
+            const projects = await apiFetch(`/user/${user.id}/projects`);
+            state.userData = user; state.userProjects = projects;
+        }
+        function renderUserProfile() {
+            const user = state.userData;
+            if (!user) { appEl.innerHTML = '<div class="loader"><div class="spinner"></div></div>'; return; }
+            const avatar = user.avatar_url || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Ccircle cx="50" cy="50" r="45" fill="%23555"/%3E%3C/svg%3E';
+            let html = `<div class="user-profile"><button class="home-link" id="backToSearch">← Back</button><div class="user-header"><img class="user-avatar" src="${avatar}"><div><h1>${escapeHtml(user.username)}</h1><p>${escapeHtml(user.bio || 'No bio')}</p><div class="user-meta">🆔 ${user.id} 🎭 ${user.role || 'Member'} 📅 Joined ${user.created ? new Date(user.created).toLocaleDateString() : '?'}</div></div></div><h2 class="section-title">📦 Projects (${state.userProjects.length})</h2><div id="userProjectsGrid" class="user-projects-grid"></div></div>`;
+            appEl.innerHTML = html;
+            document.getElementById('backToSearch')?.addEventListener('click', () => navigateToSearch());
+            const grid = document.getElementById('userProjectsGrid');
+            if(!state.userProjects.length) grid.innerHTML = '<p>No public projects.</p>';
+            else grid.innerHTML = state.userProjects.map(p => `<div class="result-card" data-slug="${p.slug}"><img class="result-icon" src="${p.icon_url || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" fill="%23333"/%3E%3C/svg%3E'}"><div><h4>${escapeHtml(p.title)}</h4><div class="result-meta">📥 ${(p.downloads||0).toLocaleString()} 📦 ${p.project_type}</div></div></div>`).join('');
+            grid.querySelectorAll('.result-card').forEach(c => c.addEventListener('click', () => navigateToProject(c.dataset.slug)));
+        }
+        function navigateToSearch(q = '') { state.page = 'search'; state.searchQuery = q || searchInput.value.trim(); state.activeFacets = []; state.offset = 0; searchInput.value = state.searchQuery; window.location.hash = state.searchQuery ? `#search?q=${encodeURIComponent(state.searchQuery)}` : '#search'; renderSearchPage(); }
+        function navigateToProject(slug) { state.page = 'project'; state.projectSlug = slug; window.location.hash = `#project/${slug}`; appEl.innerHTML = '<div class="loader"><div class="spinner"></div><p>Loading project...</p></div>'; loadProject(slug).then(() => { if(state.page === 'project') renderProjectDetail(); }).catch(e => appEl.innerHTML = `<p class="error">Failed: ${e.message}</p>`); }
+        function navigateToUser(id) { state.page = 'user'; state.userId = id; window.location.hash = `#user/${id}`; appEl.innerHTML = '<div class="loader"><div class="spinner"></div><p>Loading user...</p></div>'; loadUser(id).then(() => { if(state.page === 'user') renderUserProfile(); }).catch(e => appEl.innerHTML = `<p class="error">Error: ${e.message}</p>`); }
+        function handleHashChange() {
+            const hash = window.location.hash.slice(1);
+            if (!hash) navigateToSearch('');
+            else if (hash.startsWith('search')) { const url = new URLSearchParams(hash.split('?')[1]); navigateToSearch(url.get('q') || ''); }
+            else if (hash.startsWith('project/')) navigateToProject(hash.split('project/')[1]);
+            else if (hash.startsWith('user/')) navigateToUser(hash.split('user/')[1]);
+            else navigateToSearch('');
+        }
+        searchBtn.addEventListener('click', () => navigateToSearch(searchInput.value.trim()));
+        searchInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') navigateToSearch(searchInput.value.trim()); });
+        homeBtn.addEventListener('click', () => navigateToSearch(''));
+        window.addEventListener('hashchange', handleHashChange);
+        (async function init() { try { await loadTags(); initialLoader.style.display = 'none'; handleHashChange(); } catch(e) { appEl.innerHTML = `<p class="error">Init error: ${e.message}</p>`; } })();
+    })();
+</script>
+</body>
+</html>
