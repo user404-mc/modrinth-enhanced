@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modrinth Enhanced</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js">
+    </script>
+    <style>
+        :root {
+            --bg: #0f0f0f;
+            --card: #1c1c1c;
+            --card-hover: #272727;
+            --text: #e5e5e5;
+            --text-secondary: #a0a0a0;
+            --accent: #2B88C2;
+            --accent-dark: #4f46e5;
+            --accent-soft: #2B88C2;
+            --danger: #ef4444;
+            --border: #2e2e2e;
+            --radius: 10px;
+            --gap: 1rem;
+            --max-width: 1200px;
+            --sidebar-width: 260px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        #app {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 1rem 1.5rem;
+        }
+
+        .topbar {
+            background: linear-gradient(135deg, #154360, #0D293B);
+            border-bottom: 2px solid var(--accent);
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.15);
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -0.5px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .logo-icon {
+            background: var(--accent);
+            color: #fff;
+            padding: 0.2rem 0.5rem;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: 900;
+            box-shadow: 0 0 12px var(--accent);
+        }
+        .logo span {
+            color: #c7d2fe;
+        }
+        .topbar input[type="search"] {
+            padding: 0.5rem 1.2rem;
+            border-radius: 30px;
+            border: 1px solid var(--border);
+            background: #0f172a;
+            color: #fff;
+            min-width: 220px;
+            width: 300px;
+            max-width: 100%;
+            font-size: 0.95rem;
+        }
+        .topbar button {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1.4rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .topbar button:hover {
+            background: var(--accent-dark);
+            transform: scale(1.02);
+        }
+        .home-link {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.4rem 1.1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .home-link:hover {
+            text-decoration: none;
+            background: var(--card-hover);
+        }
+
+        .search-page {
+            display: flex;
+            gap: var(--gap);
+            margin-top: 1.5rem;
+        }
+        .sidebar {
+            width: var(--sidebar-width);
+            flex-shrink: 0;
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+            position: sticky;
+            top: 90px;
+            border: 1px solid var(--border);
+        }
+        .sidebar h3 {
+            margin-bottom: 0.75rem;
+            color: var(--accent);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        .sidebar label {
+            display: block;
+            font-weight: 600;
+            margin: 0.6rem 0 0.25rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .sidebar select {
+            width: 100%;
+            padding: 0.4rem;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: #0f172a;
+            color: #e5e5e5;
+            font-size: 0.85rem;
+        }
+        .sidebar select[multiple] {
+            min-height: 110px;
+        }
+        .apply-btn {
+            width: 100%;
+            margin-top: 1.2rem;
+            padding: 0.65rem;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius);
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .apply-btn:hover {
+            background: var(--accent-dark);
+        }
+
+        .results-area {
+            flex: 1;
+        }
+        .results-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .result-card {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+            display: flex;
+            gap: 1rem;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            border: 1px solid var(--border);
+        }
+        .result-card:hover {
+            background: var(--card-hover);
+            transform: translateY(-2px);
+            border-color: var(--accent);
+        }
+        .result-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 10px;
+            object-fit: cover;
+            background: #1e1e1e;
+        }
+        .result-info h4 {
+            margin-bottom: 0.2rem;
+            font-size: 1.15rem;
+        }
+        .result-meta {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        .result-meta a {
+            font-weight: 600;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        .pagination button {
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.5rem 1.2rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .pagination button:disabled {
+            opacity: 0.4;
+            cursor: default;
+        }
+
+        .project-detail {
+            margin-top: 1rem;
+        }
+        .project-header {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+        .project-icon-large {
+            width: 128px;
+            height: 128px;
+            border-radius: 14px;
+            object-fit: cover;
+            background: #1e1e1e;
+            border: 2px solid var(--border);
+        }
+        .project-title-area {
+            flex: 1;
+        }
+        .project-title-area h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.2rem;
+            font-weight: 700;
+        }
+        .project-stats {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            color: var(--text-secondary);
+            margin: 0.7rem 0;
+        }
+        .badge {
+            display: inline-block;
+            background: var(--accent);
+            color: #fff;
+            padding: 0.2rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .badge.status-draft {
+            background: #f59e0b;
+        }
+        .badge.status-processing {
+            background: #3b82f6;
+        }
+        .badge.status-rejected {
+            background: var(--danger);
+        }
+        .project-links a {
+            margin-right: 1rem;
+        }
+
+        .detail-tabs {
+            display: flex;
+            gap: 0.5rem;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 1rem;
+        }
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            padding: 0.5rem 1.2rem;
+            cursor: pointer;
+            font-weight: 600;
+            border-bottom: 2px solid transparent;
+        }
+        .tab-btn.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+        .tab-content {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+        }
+        .tab-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: var(--radius);
+        }
+
+        .version-list {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .version-list th,
+        .version-list td {
+            text-align: left;
+            padding: 0.6rem 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .version-list th {
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+        .download-btn {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 0.35rem 0.9rem;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-right: 0.3rem;
+            transition: background 0.2s;
+        }
+        .download-btn:hover {
+            background: var(--accent-dark);
+        }
+        .dependency-table td {
+            padding: 0.4rem 0.5rem;
+        }
+
+        .team-section {
+            margin-top: 0.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.8rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        .team-member {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 0.2rem 0.8rem 0.2rem 0.4rem;
+        }
+        .team-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #1e1e1e;
+            border: 1px solid var(--border);
+        }
+        .team-username {
+            font-weight: 600;
+            color: var(--accent);
+        }
+        .team-role {
+            font-size: 0.75rem;
+            opacity: 0.8;
+            text-transform: capitalize;
+        }
+
+        .user-profile {
+            margin-top: 1rem;
+        }
+        .user-header {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 2rem;
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+        }
+        .user-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #1e1e1e;
+            border: 2px solid var(--accent);
+        }
+        .user-details h1 {
+            font-size: 2rem;
+            margin-bottom: 0.2rem;
+        }
+        .user-bio {
+            color: var(--text-secondary);
+            max-width: 600px;
+            line-height: 1.5;
+        }
+        .user-meta {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        .user-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        .user-projects-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .user-projects-grid .result-card {
+            cursor: pointer;
+        }
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        .loader {
+            text-align: center;
+            padding: 3rem;
+        }
+        .spinner {
+            border: 3px solid var(--border);
+            border-top: 3px solid var(--accent);
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            animation: spin 0.8s linear infinite;
+            margin: 1rem auto;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .footer-note {
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 2rem;
+            padding: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        @media (max-width: 768px) {
+            .search-page {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                position: static;
+            }
+            .project-header {
+                flex-direction: column;
+                align-items: center;
+            }
+            .topbar input[type="search"] {
+                width: 100%;
+            }
+            .user-header {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <div class="logo" id="homeBtn">
+            <span class="logo-icon">M+</span>
+            <span>Modrinth <strong>Enhanced</strong></span>
+        </div>
+        <input type="search" id="searchInput" placeholder="Search projects...">
+        <button id="searchBtn">Search</button>
+    </div>
+    <div id="app">
+        <div class="loader" id="initialLoader"><div class="spinner"></div><p>Loading tags…</p></div>
+    </div>
+
+    <script>
+        (function() {
+            const API_BASE = 'https://api.modrinth.com/v2';
+            const PAGE_LIMIT = 20;
+            let state = {
+                page: 'search',
+                searchQuery: '',
+                activeFacets: [],
+                offset: 0,
+                results: [],
+                totalResults: 0,
+                projectSlug: null,
+                projectData: null,
+                tags: {
+                    game_versions: [],
+                    loaders: [],
+                    categories: []
+                },
+                userId: null,
+                userData: null,
+                userProjects: []
+            };
+
+            const appEl = document.getElementById('app');
+            const searchInput = document.getElementById('searchInput');
+            const searchBtn = document.getElementById('searchBtn');
+            const homeBtn = document.getElementById('homeBtn');
+            const initialLoader = document.getElementById('initialLoader');
+
+            async function apiFetch(path) {
+                const res = await fetch(`${API_BASE}${path}`);
+                if (!res.ok) throw new Error(`API error ${res.status}: ${res.statusText}`);
+                return res.json();
+            }
+
+            async function loadTags() {
+                const [gameVersions, loaders, categories] = await Promise.all([
+                    apiFetch('/tag/game_version'),
+                    apiFetch('/tag/loader'),
+                    apiFetch('/tag/category')
+                ]);
+                state.tags = {
+                    game_versions: gameVersions,
+                    loaders: loaders,
+                    categories: categories
+                };
+            }
+
+            function buildFacetsFromUI() {
+                const facets = [];
+                const typeSelect = document.getElementById('filter-type');
+                if (typeSelect && typeSelect.selectedOptions.length > 0) {
+                    facets.push(Array.from(typeSelect.selectedOptions).map(o => `project_type:${o.value}`));
+                }
+                const catSelect = document.getElementById('filter-categories');
+                if (catSelect && catSelect.selectedOptions.length > 0) {
+                    facets.push(Array.from(catSelect.selectedOptions).map(o => `categories:${o.value}`));
+                }
+                const verSelect = document.getElementById('filter-versions');
+                if (verSelect && verSelect.selectedOptions.length > 0) {
+                    facets.push(Array.from(verSelect.selectedOptions).map(o => `versions:${o.value}`));
+                }
+                const clientSelect = document.getElementById('filter-client');
+                if (clientSelect && clientSelect.selectedOptions.length > 0) {
+                    facets.push(Array.from(clientSelect.selectedOptions).map(o => `client_side:${o.value}`));
+                }
+                const serverSelect = document.getElementById('filter-server');
+                if (serverSelect && serverSelect.selectedOptions.length > 0) {
+                    facets.push(Array.from(serverSelect.selectedOptions).map(o => `server_side:${o.value}`));
+                }
+                return facets;
+            }
+
+            async function performSearch(query, facets, offset = 0) {
+                const params = new URLSearchParams();
+                params.append('query', query);
+                params.append('limit', PAGE_LIMIT);
+                params.append('offset', offset);
+                if (facets && facets.length > 0) {
+                    params.append('facets', JSON.stringify(facets));
+                }
+                return await apiFetch(`/search?${params.toString()}`);
+            }
+
+            function renderSearchPage() {
+                let html = `<div class="search-page">
+                    <aside class="sidebar">
+                        <h3>🔍 Filters</h3>
+                        <label>Project Type</label>
+                        <select id="filter-type" multiple size="4">
+                            <option value="mod">Mod</option>
+                            <option value="plugin">Plugin</option>
+                            <option value="datapack">Datapack</option>
+                            <option value="resourcepack">Resource Pack</option>
+                            <option value="shader">Shader</option>
+                            <option value="modpack">Modpack</option>
+                        </select>
+                        <label>Categories / Loaders</label>
+                        <select id="filter-categories" multiple size="5">
+                            ${state.tags.loaders.map(l => `<option value="${l.name}">${l.name}</option>`).join('')}
+                            ${state.tags.categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('')}
+                        </select>
+                        <label>Game Versions</label>
+                        <select id="filter-versions" multiple size="5">
+                            ${state.tags.game_versions.map(v => `<option value="${v.version}">${v.version}</option>`).join('')}
+                        </select>
+                        <label>Client Side</label>
+                        <select id="filter-client" multiple size="3">
+                            <option value="required">Required</option>
+                            <option value="optional">Optional</option>
+                            <option value="unsupported">Unsupported</option>
+                        </select>
+                        <label>Server Side</label>
+                        <select id="filter-server" multiple size="3">
+                            <option value="required">Required</option>
+                            <option value="optional">Optional</option>
+                            <option value="unsupported">Unsupported</option>
+                        </select>
+                        <button class="apply-btn" id="applyFilters">Apply Filters</button>
+                    </aside>
+                    <div class="results-area">
+                        <h2>${state.searchQuery ? `Results for &ldquo;${escapeHtml(state.searchQuery)}&rdquo;` : 'Browse projects'}</h2>
+                        <div class="results-grid" id="resultsGrid">Loading...</div>
+                        <div class="pagination" id="pagination"></div>
+                    </div>
+                </div>`;
+                appEl.innerHTML = html;
+                document.getElementById('applyFilters').addEventListener('click', async () => {
+                    state.activeFacets = buildFacetsFromUI();
+                    state.offset = 0;
+                    await executeSearch();
+                });
+                executeSearch();
+            }
+
+            async function executeSearch() {
+                const grid = document.getElementById('resultsGrid');
+                const pagDiv = document.getElementById('pagination');
+                if (!grid) return;
+                grid.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
+                try {
+                    const data = await performSearch(state.searchQuery, state.activeFacets, state.offset);
+                    state.totalResults = data.total_hits || 0;
+                    state.results = data.hits || [];
+                    renderResults(grid);
+                    renderPagination(pagDiv, state.totalResults, state.offset, PAGE_LIMIT);
+                } catch (e) {
+                    grid.innerHTML = `<p class="error">Failed to load search results: ${e.message}</p>`;
+                }
+            }
+
+            function renderResults(container) {
+                if (!state.results.length) {
+                    container.innerHTML = '<p>No projects found.</p>';
+                    return;
+                }
+                container.innerHTML = state.results.map(proj => {
+                    const icon = proj.icon_url ||
+                        'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23333"/></svg>';
+                    const downloads = (proj.downloads || 0).toLocaleString();
+                    const follows = (proj.follows || 0).toLocaleString();
+                    const type = proj.project_type || 'unknown';
+                    const authorName = proj.author || 'Unknown';
+                    const authorHtml =
+                        `<a href="#user/${escapeHtml(authorName)}" class="author-link" data-username="${escapeHtml(authorName)}">👤 ${escapeHtml(authorName)}</a>`;
+                    return `<div class="result-card" data-slug="${escapeHtml(proj.slug || proj.project_id)}">
+                        <img class="result-icon" src="${icon}" alt="icon" loading="lazy">
+                        <div class="result-info">
+                            <h4>${escapeHtml(proj.title)}</h4>
+                            <p>${escapeHtml(proj.description)}</p>
+                            <div class="result-meta">
+                                <span>📥 ${downloads} downloads</span>
+                                <span>👥 ${follows} followers</span>
+                                <span>📦 ${type}</span>
+                                ${authorHtml}
+                            </div>
+                        </div>
+                    </div>`;
+                }).join('');
+
+                container.querySelectorAll('.result-card').forEach(card => {
+                    card.addEventListener('click', (e) => {
+                        if (e.target.closest('a')) return;
+                        const slug = card.dataset.slug;
+                        if (slug) navigateToProject(slug);
+                    });
+                });
+
+                container.querySelectorAll('.author-link').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const username = link.dataset.username;
+                        if (username) navigateToUser(username);
+                    });
+                });
+            }
+
+            function renderPagination(container, total, offset, limit) {
+                if (!container) return;
+                const currentPage = Math.floor(offset / limit) + 1;
+                const totalPages = Math.ceil(total / limit) || 1;
+                container.innerHTML = `
+                    <button ${offset === 0 ? 'disabled' : ''} id="prevPage">← Previous</button>
+                    <span style="font-weight:500;">Page ${currentPage} of ${totalPages} (${total.toLocaleString()} results)</span>
+                    <button ${offset + limit >= total ? 'disabled' : ''} id="nextPage">Next →</button>
+                `;
+                document.getElementById('prevPage')?.addEventListener('click', () => {
+                    state.offset = Math.max(0, state.offset - limit);
+                    executeSearch();
+                });
+                document.getElementById('nextPage')?.addEventListener('click', () => {
+                    state.offset += limit;
+                    executeSearch();
+                });
+            }
+
+            function escapeHtml(text) {
+                if (!text) return '';
+                return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(
+                    /"/g, "&quot;").replace(/'/g, "&#039;");
+            }
+
+            async function loadProject(slug) {
+                state.projectData = null;
+                state.projectSlug = slug;
+                const proj = await apiFetch(`/project/${slug}`);
+                const versions = await apiFetch(`/project/${proj.id}/version`);
+                proj._versions = versions;
+                state.projectData = proj;
+            }
+
+            function renderProjectDetail() {
+                const proj = state.projectData;
+                if (!proj) {
+                    appEl.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
+                    return;
+                }
+                const icon = proj.icon_url ||
+                    'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23333"/></svg>';
+                const approvedDate = proj.approved ? new Date(proj.approved) : null;
+                const publishedDate = proj.published ? new Date(proj.published) : null;
+                let reviewDurationHtml = '';
+                if (approvedDate && publishedDate) {
+                    const diffMs = approvedDate - publishedDate;
+                    if (diffMs >= 0) {
+                        const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                        const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        reviewDurationHtml =
+                            `<span title="Time from project creation until approval. This may include pre-review editing, so it's an estimate.">⏱️ Est. review duration: ${days}d ${hours}h</span>`;
+                    }
+                }
+                const statusBadge = proj.status ? `<span class="badge status-${proj.status}">${proj.status}</span>` : '';
+
+                // Safe team handling
+                const team = Array.isArray(proj.team) ? proj.team : [];
+                let teamHtml = '';
+                if (team.length > 0) {
+                    const members = team.map(member => {
+                        const user = member.user || {};
+                        const avatar = user.avatar_url ||
+                            'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%23555"/></svg>';
+                        const username = user.username || user.id || 'unknown';
+                        const role = member.role || 'member';
+                        return `<span class="team-member">
+                            <img class="team-avatar" src="${avatar}" alt="${escapeHtml(username)}" loading="lazy">
+                            <a href="#user/${escapeHtml(username)}" class="team-username">${escapeHtml(username)}</a>
+                            <span class="team-role">${escapeHtml(role)}</span>
+                        </span>`;
+                    }).join('');
+                    teamHtml = `<div class="team-section"><strong>👥 Team:</strong> ${members}</div>`;
+                }
+
+                let html = `
+                <div class="project-detail">
+                    <button class="home-link" id="backToSearch">← Back to search</button>
+                    <div class="project-header">
+                        <img class="project-icon-large" src="${icon}" alt="icon">
+                        <div class="project-title-area">
+                            <h1>${escapeHtml(proj.title)}</h1>
+                            <p>${escapeHtml(proj.description)}</p>
+                            <div class="project-stats">
+                                <span>📥 ${(proj.downloads || 0).toLocaleString()} downloads</span>
+                                <span>👥 ${(proj.followers || 0).toLocaleString()} followers</span>
+                                <span>📅 Created: ${publishedDate ? publishedDate.toLocaleDateString() : 'N/A'}</span>
+                                <span>🔄 Updated: ${proj.updated ? new Date(proj.updated).toLocaleDateString() : 'N/A'}</span>
+                                ${reviewDurationHtml}
+                                <span>${statusBadge}</span>
+                                ${proj.approved ? `<span>✅ Approved: ${approvedDate.toLocaleDateString()}</span>` : ''}
+                            </div>
+                            ${teamHtml}
+                            <div class="project-links">
+                                ${proj.issues_url ? `<a href="${proj.issues_url}" target="_blank" rel="noopener">Issues</a>` : ''}
+                                ${proj.source_url ? `<a href="${proj.source_url}" target="_blank" rel="noopener">Source</a>` : ''}
+                                ${proj.wiki_url ? `<a href="${proj.wiki_url}" target="_blank" rel="noopener">Wiki</a>` : ''}
+                                ${proj.discord_url ? `<a href="${proj.discord_url}" target="_blank" rel="noopener">Discord</a>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="detail-tabs">
+                        <button class="tab-btn active" data-tab="overview">📄 Overview</button>
+                        <button class="tab-btn" data-tab="versions">📦 Versions (${(proj._versions || []).length})</button>
+                        <button class="tab-btn" data-tab="dependencies">🔗 Dependencies</button>
+                    </div>
+                    <div class="tab-content" id="tabContent"></div>
+                </div>`;
+                appEl.innerHTML = html;
+                document.getElementById('backToSearch').addEventListener('click', () => navigateToSearch());
+
+                // Re-attach click handlers to team links
+                document.querySelectorAll('.team-username').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const username = link.getAttribute('href').split('/user/')[1];
+                        if (username) navigateToUser(username);
+                    });
+                });
+
+                setupTabs(proj);
+                switchTab('overview', proj);
+            }
+
+            function setupTabs(proj) {
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove(
+                            'active'));
+                        btn.classList.add('active');
+                        switchTab(btn.dataset.tab, proj);
+                    });
+                });
+            }
+
+            function switchTab(tab, proj) {
+                const content = document.getElementById('tabContent');
+                if (!content) return;
+                switch (tab) {
+                    case 'overview':
+                        content.innerHTML = marked.parse(proj.body || '*No description provided.*');
+                        break;
+                    case 'versions':
+                        renderVersionsTab(content, proj._versions || []);
+                        break;
+                    case 'dependencies':
+                        renderDependenciesTab(content, proj);
+                        break;
+                }
+            }
+
+            function renderVersionsTab(container, versions) {
+                if (!versions.length) {
+                    container.innerHTML = '<p>No versions found.</p>';
+                    return;
+                }
+                const sorted = [...versions].sort((a, b) => new Date(b.date_published) - new Date(a.date_published));
+                let tableHtml = `<table class="version-list">
+                    <thead><tr><th>Version</th><th>Game Versions</th><th>Loaders</th><th>Published</th><th>Downloads</th><th>Download</th></tr></thead>
+                    <tbody>`;
+                sorted.forEach(v => {
+                    const files = v.files || [];
+                    const downloadLinks = files.map(f =>
+                        `<a class="download-btn" href="${f.url}" download>${escapeHtml(f.filename)}</a>`
+                        ).join(' ');
+                    tableHtml += `<tr>
+                        <td>${escapeHtml(v.version_number)}</td>
+                        <td>${(v.game_versions || []).join(', ')}</td>
+                        <td>${(v.loaders || []).join(', ')}</td>
+                        <td>${v.date_published ? new Date(v.date_published).toLocaleDateString() : 'N/A'}</td>
+                        <td>${(v.downloads || 0).toLocaleString()}</td>
+                        <td>${downloadLinks || '—'}</td>
+                    </tr>`;
+                });
+                tableHtml += '</tbody></table>';
+                container.innerHTML = tableHtml;
+            }
+
+            async function renderDependenciesTab(container, proj) {
+                container.innerHTML =
+                '<div class="loader"><div class="spinner"></div><p>Loading dependencies…</p></div>';
+                try {
+                    const versions = proj._versions || [];
+                    if (!versions.length) {
+                        container.innerHTML = '<p>No versions available.</p>';
+                        return;
+                    }
+                    const latest = versions.reduce((a, b) => new Date(a.date_published) > new Date(b.date_published) ?
+                        a : b);
+                    const versionDetail = await apiFetch(`/version/${latest.id}`);
+                    const deps = versionDetail.dependencies || [];
+                    if (!deps.length) {
+                        container.innerHTML = '<p>No dependencies listed.</p>';
+                        return;
+                    }
+                    const depProjects = await Promise.all(deps.map(dep =>
+                        apiFetch(`/project/${dep.project_id}`).catch(() => ({
+                            title: dep.project_id,
+                            slug: dep.project_id
+                        }))
+                    ));
+                    let tableHtml = `<table class="version-list dependency-table">
+                        <thead><tr><th>Project</th><th>Type</th><th>Version requirement</th></tr></thead>
+                        <tbody>`;
+                    deps.forEach((dep, i) => {
+                        const projTitle = depProjects[i]?.title || dep.project_id;
+                        const projSlug = depProjects[i]?.slug || dep.project_id;
+                        tableHtml += `<tr>
+                            <td><a href="#project/${projSlug}">${escapeHtml(projTitle)}</a></td>
+                            <td>${dep.dependency_type || 'unknown'}</td>
+                            <td>${dep.version_id ? dep.version_id : 'Any'}</td>
+                        </tr>`;
+                    });
+                    tableHtml += '</tbody></table>';
+                    container.innerHTML = tableHtml;
+                    container.querySelectorAll('a[href^="#project/"]').forEach(link => {
+                        link.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            navigateToProject(link.getAttribute('href').split('#project/')[1]);
+                        });
+                    });
+                } catch (e) {
+                    container.innerHTML = `<p>Could not load dependencies: ${e.message}</p>`;
+                }
+            }
+
+            // User Profile Functions
+            async function loadUser(userId) {
+                state.userData = null;
+                state.userProjects = [];
+                state.userId = userId;
+                const user = await apiFetch(`/user/${userId}`);
+                const projects = await apiFetch(`/user/${user.id}/projects`);
+                state.userData = user;
+                state.userProjects = projects || [];
+            }
+
+            function renderUserProfile() {
+                const user = state.userData;
+                if (!user) {
+                    appEl.innerHTML = '<div class="loader"><div class="spinner"></div><p>Loading user profile…</p></div>';
+                    return;
+                }
+                const avatarUrl = user.avatar_url ||
+                    'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%23555"/></svg>';
+                const joinDate = user.created ? new Date(user.created).toLocaleDateString() : 'Unknown';
+                const role = user.role || 'Member';
+                const bio = user.bio || 'No bio provided.';
+
+                let html = `
+                <div class="user-profile">
+                    <button class="home-link" id="backToSearch">← Back to search</button>
+                    <div class="user-header">
+                        <img class="user-avatar" src="${avatarUrl}" alt="${escapeHtml(user.username)} avatar">
+                        <div class="user-details">
+                            <h1>${escapeHtml(user.username)}</h1>
+                            <p class="user-bio">${escapeHtml(bio)}</p>
+                            <div class="user-meta">
+                                <span>🆔 ${escapeHtml(user.id)}</span>
+                                <span>🎭 ${escapeHtml(role)}</span>
+                                <span>📅 Joined ${joinDate}</span>
+                                ${user.github_url ? `<span>🐙 <a href="${user.github_url}" target="_blank" rel="noopener">GitHub</a></span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <h2 class="section-title">📦 Projects (${state.userProjects.length})</h2>
+                    <div class="user-projects-grid" id="userProjectsGrid">Loading projects...</div>
+                </div>`;
+                appEl.innerHTML = html;
+                document.getElementById('backToSearch').addEventListener('click', () => navigateToSearch());
+                renderUserProjects();
+            }
+
+            function renderUserProjects() {
+                const grid = document.getElementById('userProjectsGrid');
+                if (!grid) return;
+                if (!state.userProjects.length) {
+                    grid.innerHTML = '<p>This user has no public projects.</p>';
+                    return;
+                }
+                grid.innerHTML = state.userProjects.map(proj => {
+                    const icon = proj.icon_url ||
+                        'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23333"/></svg>';
+                    const downloads = (proj.downloads || 0).toLocaleString();
+                    const type = proj.project_type || 'unknown';
+                    return `<div class="result-card" data-slug="${escapeHtml(proj.slug || proj.id)}">
+                        <img class="result-icon" src="${icon}" alt="icon" loading="lazy">
+                        <div class="result-info">
+                            <h4>${escapeHtml(proj.title)}</h4>
+                            <p>${escapeHtml(proj.description)}</p>
+                            <div class="result-meta">
+                                <span>📥 ${downloads} downloads</span>
+                                <span>📦 ${type}</span>
+                            </div>
+                        </div>
+                    </div>`;
+                }).join('');
+
+                grid.querySelectorAll('.result-card').forEach(card => {
+                    card.addEventListener('click', () => {
+                        const slug = card.dataset.slug;
+                        if (slug) navigateToProject(slug);
+                    });
+                });
+            }
+
+            function navigateToSearch(query = '') {
+                state.page = 'search';
+                state.searchQuery = query || searchInput.value.trim();
+                state.activeFacets = [];
+                state.offset = 0;
+                searchInput.value = state.searchQuery;
+                window.location.hash = state.searchQuery ?
+                    `#search?q=${encodeURIComponent(state.searchQuery)}` : '#search';
+                renderSearchPage();
+            }
+
+            function navigateToProject(slug) {
+                state.page = 'project';
+                state.projectSlug = slug;
+                window.location.hash = `#project/${slug}`;
+                renderProjectLoading();
+                loadProject(slug).then(() => {
+                    if (state.page === 'project' && state.projectSlug === slug) renderProjectDetail();
+                }).catch(err => {
+                    appEl.innerHTML =
+                        `<div class="error"><p>Failed to load project: ${err.message}</p>
+                        <button class="home-link" onclick="window.history.back()">Go back</button></div>`;
+                });
+            }
+
+            function navigateToUser(userId) {
+                state.page = 'user';
+                state.userId = userId;
+                window.location.hash = `#user/${userId}`;
+                renderUserLoading();
+                loadUser(userId).then(() => {
+                    if (state.page === 'user' && state.userId === userId) renderUserProfile();
+                }).catch(err => {
+                    appEl.innerHTML =
+                        `<div class="error"><p>Failed to load user: ${err.message}</p>
+                        <button class="home-link" onclick="window.history.back()">Go back</button></div>`;
+                });
+            }
+
+            function renderProjectLoading() {
+                appEl.innerHTML = '<div class="loader"><div class="spinner"></div><p>Loading project…</p></div>';
+            }
+
+            function renderUserLoading() {
+                appEl.innerHTML = '<div class="loader"><div class="spinner"></div><p>Loading user profile…</p></div>';
+            }
+
+            function handleHashChange() {
+                const hash = window.location.hash.slice(1);
+                if (!hash) return navigateToSearch('');
+                if (hash.startsWith('search')) {
+                    const url = new URLSearchParams(hash.split('?')[1] || '');
+                    navigateToSearch(url.get('q') || '');
+                } else if (hash.startsWith('project/')) {
+                    navigateToProject(hash.split('project/')[1]);
+                } else if (hash.startsWith('user/')) {
+                    navigateToUser(hash.split('user/')[1]);
+                } else {
+                    navigateToSearch('');
+                }
+            }
+
+            searchBtn.addEventListener('click', () => navigateToSearch(searchInput.value.trim()));
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') navigateToSearch(searchInput.value.trim());
+            });
+            homeBtn.addEventListener('click', () => navigateToSearch(''));
+            window.addEventListener('hashchange', handleHashChange);
+
+            (async function init() {
+                try {
+                    await loadTags();
+                    initialLoader.style.display = 'none';
+                    handleHashChange();
+                } catch (e) {
+                    appEl.innerHTML =
+                        `<p class="error">Could not initialize app: ${e.message}. Please try refreshing.</p>`;
+                }
+            })();
+        })();
+    </script>
+    <div class="footer-note">
+        Modrinth Enhanced – a fan-made explorer. Data from <a href="https://modrinth.com" target="_blank">Modrinth</a>, created by <a href="https://modrinth.com/user/user404_">User404_</a>.
+    </div>
+</body>
+</html>
